@@ -7,7 +7,7 @@ import { QueueDialog } from '@/components/QueueDialog';
 import { RefreshCw, RotateCcw } from 'lucide-react';
 import type { CourtSession, QueueEntry } from '@/types/court';
 
-const Index = () => {
+const BrianWatkins = () => {
   const [sessions, setSessions] = useState<Record<number, CourtSession>>({});
   const [queue, setQueue] = useState<QueueEntry[]>([]);
   const [sessionDialogOpen, setSessionDialogOpen] = useState(false);
@@ -79,7 +79,7 @@ const Index = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-primary">NYC Tennis Courts</h1>
+            <h1 className="text-3xl font-bold text-primary">Brian Watkins Tennis Center</h1>
             <p className="text-muted-foreground">Track court times and manage the queue</p>
           </div>
           
@@ -143,4 +143,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default BrianWatkins;
