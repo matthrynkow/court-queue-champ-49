@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Clock, Users } from 'lucide-react';
+import { MapPin, Clock, Users, Map } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import TennisCourtMap from '@/components/TennisCourtMap';
 
 const sites = [
   {
@@ -24,7 +25,7 @@ const sites = [
     id: 'cooper-park',
     name: 'Cooper Park',
     description: 'Community tennis courts in a beautiful park setting',
-    courts: 3,
+    courts: 2,
     location: 'Williamsburg, Brooklyn',
     path: '/cooper-park'
   }
@@ -40,6 +41,12 @@ const Homepage = () => {
           <p className="text-lg text-muted-foreground">
             Track court times and manage queues across NYC's premier tennis facilities
           </p>
+          <TennisCourtMap>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Map size={16} />
+              View Tennis Court Map
+            </Button>
+          </TennisCourtMap>
         </div>
 
         {/* Sites Grid */}
