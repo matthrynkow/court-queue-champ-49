@@ -40,9 +40,19 @@ export function useCourtTimer(session: CourtSession | null) {
 export function formatTime(seconds: number): string {
   const isNegative = seconds < 0;
   const absSeconds = Math.abs(seconds);
-  const minutes = Math.floor(absSeconds / 60);
+  const totalMinutes = Math.floor(absSeconds / 60);
   const remainingSeconds = absSeconds % 60;
   
-  const formatted = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  if (totalMinutes >= 60) {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    let formatted = `${hours} hour${hours > 1 ? 's' : ''}`;
+    if (minutes > 0) {
+      formatted += ` ${minutes} min`;
+    }
+    return isNegative ? `-${formatted}` : formatted;
+  }
+  
+  const formatted = `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   return isNegative ? `-${formatted}` : formatted;
 }

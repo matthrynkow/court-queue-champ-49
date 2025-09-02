@@ -38,9 +38,12 @@ export function QueuePanel({ queue, onAddToQueue, onRemoveFromQueue }: QueuePane
                   <Badge variant="secondary" className="w-8 h-8 rounded-full p-0 flex items-center justify-center">
                     {index + 1}
                   </Badge>
-                  <div className="flex items-center gap-2">
-                    <Users size={16} />
-                    <span className="font-medium">{entry.playerCount} players</span>
+                  <div>
+                    <div className="font-medium">{entry.name}</div>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Users size={14} />
+                      <span>{entry.playerCount} players</span>
+                    </div>
                   </div>
                 </div>
                 

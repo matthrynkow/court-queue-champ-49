@@ -53,9 +53,10 @@ const Index = () => {
     }
   };
 
-  const handleAddToQueue = (playerCount: 2 | 4) => {
+  const handleAddToQueue = (name: string, playerCount: 2 | 4) => {
     const newEntry: QueueEntry = {
       id: Date.now().toString(),
+      name,
       playerCount,
       addedAt: new Date(),
     };

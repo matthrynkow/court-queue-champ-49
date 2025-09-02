@@ -8,6 +8,7 @@ export interface CourtSession {
 
 export interface QueueEntry {
   id: string;
+  name: string;
   playerCount: 2 | 4;
   addedAt: Date;
   expectedCourtNumber?: number;
