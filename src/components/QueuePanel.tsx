@@ -13,18 +13,36 @@ interface QueuePanelProps {
 }
 
 export function QueuePanel({ queue, onAddToQueue, onRemoveFromQueue, shouldShowQueue, canClaimDirectly }: QueuePanelProps) {
-  if (!shouldShowQueue && queue.length === 0) {
+  if (!shouldShowQueue && queue.length === 0 && canClaimDirectly) {
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-lg">Queue</CardTitle>
-          <Button onClick={onAddToQueue} disabled={!canClaimDirectly}>
-            {canClaimDirectly ? 'Claim Court' : 'Join Queue'}
+          <Button onClick={onAddToQueue}>
+            Claim Court
           </Button>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            {canClaimDirectly ? 'Courts available - claim one directly!' : 'No queue needed - all courts available'}
+            Courts available - claim one directly!
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!shouldShowQueue && queue.length === 0 && !canClaimDirectly) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg">Queue</CardTitle>
+          <Button onClick={onAddToQueue}>
+            Join Queue
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-4">
+            All courts claimed - join the queue to save your spot!
           </p>
         </CardContent>
       </Card>
