@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { CourtSession, CourtStatus } from '@/types/court';
 
-export function useCourtTimer(session: CourtSession | null) {
+export function useCourtTimer(session: CourtSession | null, onTimeExpired?: () => void) {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [status, setStatus] = useState<CourtStatus>('available');
 
@@ -19,12 +19,11 @@ export function useCourtTimer(session: CourtSession | null) {
       
       setTimeRemaining(Math.floor(remaining / 1000));
 
-      if (remaining > 10 * 60 * 1000) {
+      if (remaining <= 0) {
         setStatus('available');
-      } else if (remaining > 0) {
-        setStatus('warning');
+        onTimeExpired?.();
       } else {
-        setStatus('overtime');
+        setStatus('claimed');
       }
     };
 
@@ -32,7 +31,7 @@ export function useCourtTimer(session: CourtSession | null) {
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [session]);
+  }, [session, onTimeExpired]);
 
   return { timeRemaining, status };
 }

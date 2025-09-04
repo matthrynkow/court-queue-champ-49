@@ -1,79 +1,113 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Users, Clock, Plus } from 'lucide-react';
+import { Users, Clock, Crown } from 'lucide-react';
 import type { QueueEntry } from '@/types/court';
+import { cn } from '@/lib/utils';
 
 interface QueuePanelProps {
   queue: QueueEntry[];
   onAddToQueue: () => void;
   onRemoveFromQueue: (id: string) => void;
+  shouldShowQueue: boolean;
+  canClaimDirectly: boolean;
 }
 
-export function QueuePanel({ queue, onAddToQueue, onRemoveFromQueue }: QueuePanelProps) {
+export function QueuePanel({ queue, onAddToQueue, onRemoveFromQueue, shouldShowQueue, canClaimDirectly }: QueuePanelProps) {
+  if (!shouldShowQueue && queue.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg">Queue</CardTitle>
+          <Button onClick={onAddToQueue} disabled={!canClaimDirectly}>
+            {canClaimDirectly ? 'Claim Court' : 'Join Queue'}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-4">
+            {canClaimDirectly ? 'Courts available - claim one directly!' : 'No queue needed - all courts available'}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Queue</CardTitle>
-          <Button onClick={onAddToQueue} size="sm">
-            <Plus size={16} className="mr-1" />
-            Join Queue
-          </Button>
-        </div>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-lg">
+          Queue {!shouldShowQueue && queue.length > 0 && '(Courts Available)'}
+        </CardTitle>
+        <Button onClick={onAddToQueue}>
+          {canClaimDirectly ? 'Claim Court' : 'Join Queue'}
+        </Button>
       </CardHeader>
       <CardContent>
         {queue.length === 0 ? (
-          <p className="text-center text-muted-foreground py-4">
-            No one in queue
-          </p>
+          <p className="text-muted-foreground text-center py-4">No one in queue</p>
         ) : (
           <div className="space-y-3">
             {queue.map((entry, index) => (
-              <div
+              <div 
                 key={entry.id}
-                className="flex items-center justify-between p-3 bg-court-surface rounded-lg"
+                className={cn(
+                  "flex items-center justify-between p-3 border rounded-lg transition-all",
+                  entry.isNext && "border-green-500 bg-green-50 dark:bg-green-950"
+                )}
               >
                 <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="w-8 h-8 rounded-full p-0 flex items-center justify-center">
-                    {index + 1}
-                  </Badge>
+                  <div className="flex items-center gap-1">
+                    {entry.isNext && <Crown size={16} className="text-green-600" />}
+                    <span className={cn(
+                      "font-bold", 
+                      entry.isNext ? "text-green-600" : "text-primary"
+                    )}>
+                      #{index + 1}
+                    </span>
+                  </div>
                   <div>
-                    <div className="font-medium">{entry.name}</div>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Users size={14} />
-                      <span>{entry.playerCount} players</span>
+                    <p className={cn(
+                      "font-medium",
+                      entry.isNext && "text-green-700 dark:text-green-300"
+                    )}>
+                      {entry.name} {entry.isNext && '(Next!)'}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Users size={14} />
+                        <span>{entry.playerCount === 2 ? 'Singles' : 'Doubles'}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock size={14} />
+                        <span>
+                          {new Date(entry.addedAt).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      </div>
+                      {entry.expectedStartTime && (
+                        <span className="text-xs">
+                          Expected: {entry.expectedStartTime.toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      )}
+                      {entry.expectedCourtNumber && (
+                        <span className="text-xs">
+                          Court {entry.expectedCourtNumber}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-3">
-                  {entry.expectedStartTime && (
-                    <div className="text-right">
-                      <div className="text-sm text-muted-foreground">Expected start</div>
-                      <div className="text-sm font-medium flex items-center gap-1">
-                        <Clock size={12} />
-                        {entry.expectedStartTime.toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                        {entry.expectedCourtNumber && (
-                          <span className="text-xs text-muted-foreground">
-                            (Court {entry.expectedCourtNumber})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onRemoveFromQueue(entry.id)}
-                  >
-                    Remove
-                  </Button>
-                </div>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => onRemoveFromQueue(entry.id)}
+                >
+                  Remove
+                </Button>
               </div>
             ))}
           </div>

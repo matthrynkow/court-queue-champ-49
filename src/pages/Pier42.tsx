@@ -6,6 +6,7 @@ import { SessionDialog } from '@/components/SessionDialog';
 import { QueueDialog } from '@/components/QueueDialog';
 import { RefreshCw, RotateCcw } from 'lucide-react';
 import type { CourtSession, QueueEntry } from '@/types/court';
+import { useQueueLogic } from '@/hooks/useQueueLogic';
 
 const Pier42 = () => {
   const [sessions, setSessions] = useState<Record<number, CourtSession>>({});
@@ -16,11 +17,18 @@ const Pier42 = () => {
   const [editingSession, setEditingSession] = useState<CourtSession | null>(null);
 
   const courts = [1, 2, 3, 4];
+  const { availableCourts, shouldShowQueue, queueWithNext, canClaimDirectly } = useQueueLogic(sessions, queue, courts.length);
 
   const handleStartSession = (courtNumber: number) => {
+    const nextPlayer = queueWithNext.find(entry => entry.isNext);
     setSelectedCourt(courtNumber);
     setEditingSession(null);
     setSessionDialogOpen(true);
+    
+    // If there's a next player, remove them from queue when starting session
+    if (nextPlayer) {
+      setQueue(prev => prev.filter(entry => entry.id !== nextPlayer.id));
+    }
   };
 
   const handleEditSession = (session: CourtSession) => {
@@ -54,6 +62,26 @@ const Pier42 = () => {
   };
 
   const handleAddToQueue = (name: string, playerCount: 2 | 4) => {
+    // If courts are available, start session directly instead of adding to queue
+    if (canClaimDirectly) {
+      const availableCourtNumber = courts.find(court => !sessions[court]);
+      if (availableCourtNumber) {
+        const newSession: CourtSession = {
+          id: Date.now().toString(),
+          courtNumber: availableCourtNumber,
+          startTime: new Date(),
+          duration: 60, // Default duration
+          playerCount,
+          playerName: name,
+        };
+        setSessions(prev => ({
+          ...prev,
+          [availableCourtNumber]: newSession
+        }));
+        return;
+      }
+    }
+
     const newEntry: QueueEntry = {
       id: Date.now().toString(),
       name,
@@ -66,6 +94,14 @@ const Pier42 = () => {
 
   const handleRemoveFromQueue = (id: string) => {
     setQueue(prev => prev.filter(entry => entry.id !== id));
+  };
+
+  const handleTimeExpired = (courtNumber: number) => {
+    setSessions(prev => {
+      const updated = { ...prev };
+      delete updated[courtNumber];
+      return updated;
+    });
   };
 
   const handleDailyReset = () => {
@@ -105,22 +141,32 @@ const Pier42 = () => {
 
         {/* Courts Grid - 2 rows of 2 courts */}
         <div className="grid grid-cols-2 gap-4">
-          {courts.map((courtNumber) => (
-            <CourtTile
-              key={courtNumber}
-              courtNumber={courtNumber}
-              session={sessions[courtNumber] || null}
-              onStartSession={handleStartSession}
-              onEditSession={handleEditSession}
-            />
-          ))}
+          {courts.map((courtNumber) => {
+            const nextPlayer = queueWithNext.find(entry => entry.isNext);
+            const canClaim = !sessions[courtNumber] && !!nextPlayer;
+            
+            return (
+              <CourtTile
+                key={courtNumber}
+                courtNumber={courtNumber}
+                session={sessions[courtNumber] || null}
+                onStartSession={handleStartSession}
+                onEditSession={handleEditSession}
+                onTimeExpired={handleTimeExpired}
+                canClaim={canClaim}
+                nextPlayerName={canClaim ? nextPlayer?.name : undefined}
+              />
+            );
+          })}
         </div>
 
         {/* Queue Panel */}
         <QueuePanel
-          queue={queue}
+          queue={queueWithNext}
           onAddToQueue={() => setQueueDialogOpen(true)}
           onRemoveFromQueue={handleRemoveFromQueue}
+          shouldShowQueue={shouldShowQueue}
+          canClaimDirectly={canClaimDirectly}
         />
 
         {/* Dialogs */}
@@ -131,6 +177,7 @@ const Pier42 = () => {
           existingSession={editingSession}
           onSave={handleSaveSession}
           onDelete={editingSession ? handleDeleteSession : undefined}
+          suggestedPlayerName={queueWithNext.find(entry => entry.isNext)?.name}
         />
 
         <QueueDialog

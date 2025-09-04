@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -13,49 +13,44 @@ interface SessionDialogProps {
   existingSession?: CourtSession | null;
   onSave: (session: Omit<CourtSession, 'id'>) => void;
   onDelete?: () => void;
+  suggestedPlayerName?: string;
 }
 
-export function SessionDialog({
-  open,
-  onOpenChange,
-  courtNumber,
-  existingSession,
-  onSave,
-  onDelete
+export function SessionDialog({ 
+  open, 
+  onOpenChange, 
+  courtNumber, 
+  existingSession, 
+  onSave, 
+  onDelete,
+  suggestedPlayerName 
 }: SessionDialogProps) {
-  const [playerCount, setPlayerCount] = useState<'2' | '4'>(
-    existingSession?.playerCount.toString() as '2' | '4' || '2'
-  );
-  const [startTime, setStartTime] = useState(() => {
+  const [duration, setDuration] = useState(60);
+  const [playerCount, setPlayerCount] = useState<2 | 4>(2);
+  const [playerName, setPlayerName] = useState('');
+
+  useEffect(() => {
     if (existingSession) {
-      const date = new Date(existingSession.startTime);
-      return date.toLocaleTimeString('en-US', { 
-        hour12: false, 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
+      setDuration(existingSession.duration);
+      setPlayerCount(existingSession.playerCount);
+      setPlayerName(existingSession.playerName);
+    } else {
+      setDuration(60);
+      setPlayerCount(2);
+      setPlayerName(suggestedPlayerName || '');
     }
-    return new Date().toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  });
+  }, [existingSession, open, suggestedPlayerName]);
 
   const handleSave = () => {
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const sessionDate = new Date();
-    sessionDate.setHours(hours, minutes, 0, 0);
-
-    const duration = playerCount === '2' ? 60 : 120; // 1h for singles, 2h for doubles
-
+    if (!playerName.trim()) return;
+    
     onSave({
       courtNumber,
-      startTime: sessionDate,
-      playerCount: parseInt(playerCount) as 2 | 4,
-      duration
+      startTime: new Date(),
+      duration,
+      playerCount,
+      playerName: playerName.trim(),
     });
-
     onOpenChange(false);
   };
 
@@ -67,51 +62,62 @@ export function SessionDialog({
             {existingSession ? 'Edit' : 'Start'} Session - Court {courtNumber}
           </DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-6">
-          <div>
-            <Label className="text-base font-medium">Number of Players</Label>
-            <RadioGroup
-              value={playerCount}
-              onValueChange={(value) => setPlayerCount(value as '2' | '4')}
-              className="mt-2"
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="playerName">Player Name</Label>
+            <Input
+              id="playerName"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter player name"
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Input
+              id="duration"
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              min="5"
+              max="180"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Game Type</Label>
+            <RadioGroup 
+              value={playerCount.toString()} 
+              onValueChange={(value) => setPlayerCount(Number(value) as 2 | 4)}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="2" id="singles" />
-                <Label htmlFor="singles">2 Players (Singles - 1 hour)</Label>
+                <Label htmlFor="singles">Singles (2 players)</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="4" id="doubles" />
-                <Label htmlFor="doubles">4 Players (Doubles - 2 hours)</Label>
+                <Label htmlFor="doubles">Doubles (4 players)</Label>
               </div>
             </RadioGroup>
           </div>
-
-          <div>
-            <Label htmlFor="start-time" className="text-base font-medium">
-              Start Time
-            </Label>
-            <Input
-              id="start-time"
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="mt-2"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={handleSave} className="flex-1">
-              {existingSession ? 'Update' : 'Start'} Session
-            </Button>
-            
-            {existingSession && onDelete && (
-              <Button variant="destructive" onClick={onDelete}>
-                End Session
-              </Button>
-            )}
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          {onDelete && (
+            <Button variant="destructive" onClick={onDelete}>
+              Delete Session
+            </Button>
+          )}
+          <Button onClick={handleSave} disabled={!playerName.trim()}>
+            {existingSession ? 'Update' : 'Start'} Session
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

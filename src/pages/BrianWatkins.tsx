@@ -6,6 +6,7 @@ import { SessionDialog } from '@/components/SessionDialog';
 import { QueueDialog } from '@/components/QueueDialog';
 import { RefreshCw, RotateCcw } from 'lucide-react';
 import type { CourtSession, QueueEntry } from '@/types/court';
+import { useQueueLogic } from '@/hooks/useQueueLogic';
 
 const BrianWatkins = () => {
   const [sessions, setSessions] = useState<Record<number, CourtSession>>({});
@@ -16,11 +17,18 @@ const BrianWatkins = () => {
   const [editingSession, setEditingSession] = useState<CourtSession | null>(null);
 
   const courts = [1, 2, 3, 4, 5, 6];
+  const { availableCourts, shouldShowQueue, queueWithNext, canClaimDirectly } = useQueueLogic(sessions, queue, courts.length);
 
   const handleStartSession = (courtNumber: number) => {
+    const nextPlayer = queueWithNext.find(entry => entry.isNext);
     setSelectedCourt(courtNumber);
     setEditingSession(null);
     setSessionDialogOpen(true);
+    
+    // If there's a next player, remove them from queue when starting session
+    if (nextPlayer) {
+      setQueue(prev => prev.filter(entry => entry.id !== nextPlayer.id));
+    }
   };
 
   const handleEditSession = (session: CourtSession) => {
@@ -54,6 +62,26 @@ const BrianWatkins = () => {
   };
 
   const handleAddToQueue = (name: string, playerCount: 2 | 4) => {
+    // If courts are available, start session directly instead of adding to queue
+    if (canClaimDirectly) {
+      const availableCourtNumber = courts.find(court => !sessions[court]);
+      if (availableCourtNumber) {
+        const newSession: CourtSession = {
+          id: Date.now().toString(),
+          courtNumber: availableCourtNumber,
+          startTime: new Date(),
+          duration: 60, // Default duration
+          playerCount,
+          playerName: name,
+        };
+        setSessions(prev => ({
+          ...prev,
+          [availableCourtNumber]: newSession
+        }));
+        return;
+      }
+    }
+
     const newEntry: QueueEntry = {
       id: Date.now().toString(),
       name,
@@ -66,6 +94,14 @@ const BrianWatkins = () => {
 
   const handleRemoveFromQueue = (id: string) => {
     setQueue(prev => prev.filter(entry => entry.id !== id));
+  };
+
+  const handleTimeExpired = (courtNumber: number) => {
+    setSessions(prev => {
+      const updated = { ...prev };
+      delete updated[courtNumber];
+      return updated;
+    });
   };
 
   const handleDailyReset = () => {
@@ -118,9 +154,11 @@ const BrianWatkins = () => {
 
         {/* Queue Panel */}
         <QueuePanel
-          queue={queue}
+          queue={queueWithNext}
           onAddToQueue={() => setQueueDialogOpen(true)}
           onRemoveFromQueue={handleRemoveFromQueue}
+          shouldShowQueue={shouldShowQueue}
+          canClaimDirectly={canClaimDirectly}
         />
 
         {/* Dialogs */}
@@ -131,6 +169,7 @@ const BrianWatkins = () => {
           existingSession={editingSession}
           onSave={handleSaveSession}
           onDelete={editingSession ? handleDeleteSession : undefined}
+          suggestedPlayerName={queueWithNext.find(entry => entry.isNext)?.name}
         />
 
         <QueueDialog
