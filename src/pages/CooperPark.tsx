@@ -19,10 +19,13 @@ const CooperPark = () => {
   const courts = [1, 2];
   const { availableCourts, shouldShowQueue, queueWithNext, canClaimDirectly } = useQueueLogic(sessions, queue, courts.length);
 
+  const [suggestedPlayerName, setSuggestedPlayerName] = useState<string>('');
+
   const handleStartSession = (courtNumber: number) => {
     const nextPlayer = queueWithNext.find(entry => entry.isNext);
     setSelectedCourt(courtNumber);
     setEditingSession(null);
+    setSuggestedPlayerName(nextPlayer?.name || '');
     setSessionDialogOpen(true);
     
     // If there's a next player, remove them from queue when starting session
@@ -177,7 +180,7 @@ const CooperPark = () => {
           existingSession={editingSession}
           onSave={handleSaveSession}
           onDelete={editingSession ? handleDeleteSession : undefined}
-          suggestedPlayerName={queueWithNext.find(entry => entry.isNext)?.name}
+          suggestedPlayerName={suggestedPlayerName}
         />
 
         <QueueDialog
