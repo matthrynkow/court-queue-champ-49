@@ -29,13 +29,21 @@ export function SessionDialog({
   const [playerCount, setPlayerCount] = useState<2 | 4>(2);
   const [playerName, setPlayerName] = useState('');
 
+  // Update duration when player count changes
+  useEffect(() => {
+    if (!existingSession) {
+      const defaultDuration = playerCount === 2 ? 60 : 120;
+      setDuration(defaultDuration);
+    }
+  }, [playerCount, existingSession]);
+
   useEffect(() => {
     if (existingSession) {
       setDuration(existingSession.duration);
       setPlayerCount(existingSession.playerCount);
       setPlayerName(existingSession.playerName);
     } else {
-      setDuration(60);
+      setDuration(playerCount === 2 ? 60 : 120);
       setPlayerCount(2);
       setPlayerName(suggestedPlayerName || '');
     }
@@ -83,7 +91,7 @@ export function SessionDialog({
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               min="5"
-              max="180"
+              max={playerCount === 2 ? "60" : "120"}
             />
           </div>
           
