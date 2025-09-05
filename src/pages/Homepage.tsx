@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MapPin, Clock, Users, Map } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TennisCourtMap from '@/components/TennisCourtMap';
+import AuthButton from '@/components/AuthButton';
 
 const sites = [
   {
@@ -36,11 +37,19 @@ const Homepage = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-primary">NYC Tennis Court Tracker</h1>
-          <p className="text-lg text-muted-foreground">
-            Track court times and manage queues across NYC's premier tennis facilities
-          </p>
+        <div className="flex justify-between items-start mb-8">
+          <div className="text-center flex-1 space-y-4">
+            <h1 className="text-4xl font-bold text-primary">NYC Tennis Court Tracker</h1>
+            <p className="text-lg text-muted-foreground">
+              Track court times and manage queues across NYC's premier tennis facilities
+            </p>
+          </div>
+          <div className="ml-4">
+            <AuthButton />
+          </div>
+        </div>
+        
+        <div className="text-center">
           <TennisCourtMap>
             <Button variant="outline" className="flex items-center gap-2">
               <Map size={16} />
