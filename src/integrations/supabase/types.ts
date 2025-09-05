@@ -14,7 +14,194 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      court_sessions: {
+        Row: {
+          court_id: string
+          court_number: number
+          created_at: string
+          created_by: string
+          duration_minutes: number
+          ended_at: string | null
+          id: string
+          location_id: string
+          player_count: number
+          player_name: string
+          started_at: string
+          updated_at: string
+        }
+        Insert: {
+          court_id: string
+          court_number: number
+          created_at?: string
+          created_by: string
+          duration_minutes: number
+          ended_at?: string | null
+          id?: string
+          location_id: string
+          player_count: number
+          player_name: string
+          started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          court_id?: string
+          court_number?: number
+          created_at?: string
+          created_by?: string
+          duration_minutes?: number
+          ended_at?: string | null
+          id?: string
+          location_id?: string
+          player_count?: number
+          player_name?: string
+          started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "court_sessions_court_id_fkey"
+            columns: ["court_id"]
+            isOneToOne: false
+            referencedRelation: "courts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "court_sessions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courts: {
+        Row: {
+          court_number: number
+          created_at: string
+          id: string
+          location_id: string
+        }
+        Insert: {
+          court_number: number
+          created_at?: string
+          id?: string
+          location_id: string
+        }
+        Update: {
+          court_number?: number
+          created_at?: string
+          id?: string
+          location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courts_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          total_courts: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          total_courts: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          total_courts?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      queue_entries: {
+        Row: {
+          added_at: string
+          claimed_by_session_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          location_id: string
+          player_count: number
+          player_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          added_at?: string
+          claimed_by_session_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          location_id: string
+          player_count: number
+          player_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          added_at?: string
+          claimed_by_session_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          location_id?: string
+          player_count?: number
+          player_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_entries_claimed_by_session_id_fkey"
+            columns: ["claimed_by_session_id"]
+            isOneToOne: false
+            referencedRelation: "court_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_entries_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
