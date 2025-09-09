@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Clock, Users, Map } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TennisCourtMap from '@/components/TennisCourtMap';
 import AuthButton from '@/components/AuthButton';
+import { LocationPrompt } from '@/components/LocationPrompt';
+import { NearbyCourtsList } from '@/components/NearbyCourtsList';
+import type { Coordinates } from '@/utils/distanceCalculator';
 
 const sites = [
   {
@@ -33,6 +37,12 @@ const sites = [
 ];
 
 const Homepage = () => {
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+
+  const handleLocationGranted = (coordinates: Coordinates) => {
+    setUserLocation(coordinates);
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -49,45 +59,55 @@ const Homepage = () => {
           </div>
         </div>
         
-        <div className="text-center">
-          <TennisCourtMap>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Map size={16} />
-              View Tennis Court Map
-            </Button>
-          </TennisCourtMap>
-        </div>
+        {/* Location Services */}
+        <LocationPrompt onLocationGranted={handleLocationGranted} />
+        
+        {/* Nearby Courts or Map */}
+        {userLocation ? (
+          <NearbyCourtsList userLocation={userLocation} />
+        ) : (
+          <>
+            <div className="text-center">
+              <TennisCourtMap>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Map size={16} />
+                  View Tennis Court Map
+                </Button>
+              </TennisCourtMap>
+            </div>
 
-        {/* Sites Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sites.map((site) => (
-            <Card key={site.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-xl">{site.name}</CardTitle>
-                <CardDescription>{site.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin size={16} />
-                  <span>{site.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users size={16} />
-                  <span>{site.courts} courts available</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock size={16} />
-                  <span>Singles: 1hr • Doubles: 2hrs</span>
-                </div>
-                <Link to={site.path}>
-                  <Button className="w-full">
-                    View Courts
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            {/* Sites Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sites.map((site) => (
+                <Card key={site.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-xl">{site.name}</CardTitle>
+                    <CardDescription>{site.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin size={16} />
+                      <span>{site.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users size={16} />
+                      <span>{site.courts} courts available</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock size={16} />
+                      <span>Singles: 1hr • Doubles: 2hrs</span>
+                    </div>
+                    <Link to={site.path}>
+                      <Button className="w-full">
+                        View Courts
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground pt-8">
