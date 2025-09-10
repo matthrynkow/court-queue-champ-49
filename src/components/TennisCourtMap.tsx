@@ -30,9 +30,13 @@ const tennisLocations = [
 
 interface TennisCourtMapProps {
   children: React.ReactNode;
+  focusedLocation?: {
+    name: string;
+    coordinates: [number, number];
+  };
 }
 
-const TennisCourtMap = ({ children }: TennisCourtMapProps) => {
+const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
@@ -46,8 +50,8 @@ const TennisCourtMap = ({ children }: TennisCourtMapProps) => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: [-73.9712, 40.7831], // Center on NYC
-      zoom: 11,
+      center: focusedLocation?.coordinates || [-73.9712, 40.7831], // Center on focused location or NYC
+      zoom: focusedLocation ? 15 : 11, // Zoom closer if focusing on specific location
     });
 
     // Add markers for each tennis location
@@ -93,7 +97,7 @@ const TennisCourtMap = ({ children }: TennisCourtMapProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin size={20} />
-            NYC Tennis Court Locations
+            {focusedLocation ? focusedLocation.name : 'NYC Tennis Court Locations'}
           </DialogTitle>
         </DialogHeader>
         

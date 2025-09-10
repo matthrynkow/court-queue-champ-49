@@ -4,7 +4,8 @@ import { CourtTile } from '@/components/CourtTile';
 import { QueuePanel } from '@/components/QueuePanel';
 import { SessionDialog } from '@/components/SessionDialog';
 import { QueueDialog } from '@/components/QueueDialog';
-import { RefreshCw, RotateCcw } from 'lucide-react';
+import { RefreshCw, RotateCcw, MapPin } from 'lucide-react';
+import TennisCourtMap from '@/components/TennisCourtMap';
 import type { CourtSession, QueueEntry } from '@/types/court';
 import { useQueueLogic } from '@/hooks/useQueueLogic';
 
@@ -120,6 +121,18 @@ const BrianWatkins = () => {
           </div>
           
           <div className="flex gap-2">
+            <TennisCourtMap focusedLocation={{
+              name: 'Brian Watkins Tennis Center',
+              coordinates: [-73.9712, 40.7831]
+            }}>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <MapPin size={16} />
+                See on Map
+              </Button>
+            </TennisCourtMap>
             <Button
               variant="outline"
               onClick={() => window.location.reload()}
