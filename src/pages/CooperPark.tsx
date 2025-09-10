@@ -133,7 +133,7 @@ const CooperPark = () => {
                 className="flex items-center gap-2"
               >
                 <MapPin size={16} />
-                See on Map
+                Show on Map
               </Button>
             </TennisCourtMap>
             <Button
