@@ -116,7 +116,7 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[80vh]">
+      <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin size={20} />
@@ -124,8 +124,12 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="relative flex-1">
-          <div ref={mapContainer} className="absolute inset-0 rounded-lg" />
+        <div className="flex-1 min-h-[500px] relative">
+          <div 
+            ref={mapContainer} 
+            className="w-full h-full rounded-lg"
+            style={{ minHeight: '500px' }}
+          />
         </div>
       </DialogContent>
     </Dialog>
