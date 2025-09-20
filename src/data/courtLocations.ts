@@ -21,8 +21,8 @@ export const COURT_LOCATIONS: CourtLocation[] = [
     totalCourts: 6,
     location: 'Manhattan, NY',
     path: '/brian-watkins',
-    coordinates: { latitude: 40.7831, longitude: -73.9712 }, // Central Park area
-    mapCoordinates: [-73.9712, 40.7831]
+    coordinates: { latitude: 40.7151832292486, longitude: -73.97536625397828 },
+    mapCoordinates: [-73.97536625397828, 40.7151832292486]
   },
   {
     id: 'pier-42',
@@ -31,8 +31,8 @@ export const COURT_LOCATIONS: CourtLocation[] = [
     totalCourts: 4,
     location: 'Lower East Side, NY',
     path: '/pier-42',
-    coordinates: { latitude: 40.7128, longitude: -73.9959 }, // Lower East Side
-    mapCoordinates: [-73.9959, 40.7128]
+    coordinates: { latitude: 40.71059971311849, longitude: -73.98053250864272 },
+    mapCoordinates: [-73.98053250864272, 40.71059971311849]
   },
   {
     id: 'cooper-park',
@@ -41,7 +41,7 @@ export const COURT_LOCATIONS: CourtLocation[] = [
     totalCourts: 2,
     location: 'Williamsburg, Brooklyn',
     path: '/cooper-park',
-    coordinates: { latitude: 40.7178, longitude: -73.9442 }, // Williamsburg
-    mapCoordinates: [-73.9442, 40.7178]
+    coordinates: { latitude: 40.71591838384588, longitude: -73.93632707498023 },
+    mapCoordinates: [-73.93632707498023, 40.71591838384588]
   }
 ];
