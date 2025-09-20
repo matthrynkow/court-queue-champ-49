@@ -8,33 +8,7 @@ import AuthButton from '@/components/AuthButton';
 import { LocationPrompt } from '@/components/LocationPrompt';
 import { NearbyCourtsList } from '@/components/NearbyCourtsList';
 import type { Coordinates } from '@/utils/distanceCalculator';
-
-const sites = [
-  {
-    id: 'brian-watkins',
-    name: 'Brian Watkins Tennis Center',
-    description: 'Premier tennis facility with 6 courts available for singles and doubles play',
-    courts: 6,
-    location: 'Manhattan, NY',
-    path: '/brian-watkins'
-  },
-  {
-    id: 'pier-42',
-    name: 'Pier 42 Courts', 
-    description: 'Waterfront tennis courts with stunning river views',
-    courts: 4,
-    location: 'Lower East Side, NY',
-    path: '/pier-42'
-  },
-  {
-    id: 'cooper-park',
-    name: 'Cooper Park',
-    description: 'Community tennis courts in a beautiful park setting',
-    courts: 2,
-    location: 'Williamsburg, Brooklyn',
-    path: '/cooper-park'
-  }
-];
+import { COURT_LOCATIONS } from '@/data/courtLocations';
 
 const Homepage = () => {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
@@ -78,7 +52,7 @@ const Homepage = () => {
 
             {/* Sites Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sites.map((site) => (
+              {COURT_LOCATIONS.map((site) => (
                 <Card key={site.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle className="text-xl">{site.name}</CardTitle>
@@ -91,7 +65,7 @@ const Homepage = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Users size={16} />
-                      <span>{site.courts} courts available</span>
+                      <span>{site.totalCourts} courts available</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock size={16} />

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { calculateDistance, formatDistance, estimateWalkingTime, type Coordinates } from '@/utils/distanceCalculator';
 import { supabase } from '@/integrations/supabase/client';
+import { COURT_LOCATIONS } from '@/data/courtLocations';
 
 interface Court {
   id: string;
@@ -25,35 +26,6 @@ interface NearbyCourtsListProps {
   userLocation: Coordinates;
 }
 
-const COURT_LOCATIONS: Omit<Court, 'activeSessions' | 'queueLength'>[] = [
-  {
-    id: 'brian-watkins',
-    name: 'Brian Watkins Tennis Center',
-    description: 'Premier tennis facility with 6 courts available for singles and doubles play',
-    totalCourts: 6,
-    location: 'Manhattan, NY',
-    path: '/brian-watkins',
-    coordinates: { latitude: 40.7831, longitude: -73.9712 } // Central Park
-  },
-  {
-    id: 'pier-42',
-    name: 'Pier 42 Courts',
-    description: 'Waterfront tennis courts with stunning river views',
-    totalCourts: 4,
-    location: 'Lower East Side, NY',
-    path: '/pier-42',
-    coordinates: { latitude: 40.7128, longitude: -73.9959 } // Lower East Side
-  },
-  {
-    id: 'cooper-park',
-    name: 'Cooper Park',
-    description: 'Community tennis courts in a beautiful park setting',
-    totalCourts: 2,
-    location: 'Williamsburg, Brooklyn',
-    path: '/cooper-park',
-    coordinates: { latitude: 40.7178, longitude: -73.9442 } // Williamsburg
-  }
-];
 
 export function NearbyCourtsList({ userLocation }: NearbyCourtsListProps) {
   const [courts, setCourts] = useState<Court[]>([]);
