@@ -45,8 +45,11 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
 
   useEffect(() => {
+    console.log('TennisCourtMap effect', { isOpen, hasContainer: !!mapContainer.current });
     if (!mapContainer.current || !isOpen) return;
 
     // Clear any existing map
@@ -72,10 +75,15 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
         }).setView(focusCoords, focusedLocation ? 15 : 11);
 
         // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const tile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           maxZoom: 19,
         }).addTo(map.current);
+
+        tile.once('load', () => {
+          setMapReady(true);
+          setShowFallback(false);
+        });
 
         // Add markers for each tennis location
         tennisLocations.forEach((location) => {
@@ -115,12 +123,12 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
           }
         });
 
-        // Force a resize after map is initialized
-        setTimeout(() => {
-          if (map.current) {
-            map.current.invalidateSize();
-          }
-        }, 100);
+        // Ensure proper sizing after initialization and after CSS transitions
+        map.current.whenReady(() => {
+          if (map.current) map.current.invalidateSize();
+          setTimeout(() => { if (map.current) map.current.invalidateSize(); }, 300);
+          setTimeout(() => { if (map.current) map.current.invalidateSize(); }, 800);
+        });
 
       } catch (error) {
         console.error('Error initializing map:', error);
@@ -137,6 +145,20 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
     };
   }, [focusedLocation, isOpen]);
 
+  const centerLatLng: [number, number] = focusedLocation 
+    ? [focusedLocation.coordinates[1], focusedLocation.coordinates[0]]
+    : [40.7831, -73.9712];
+
+  // Manage fallback if tiles don't load in time
+  useEffect(() => {
+    if (!isOpen) return;
+    // Start fresh for each open
+    const t = setTimeout(() => {
+      if (!mapReady) setShowFallback(true);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [isOpen, mapReady]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -150,12 +172,21 @@ const TennisCourtMap = ({ children, focusedLocation }: TennisCourtMapProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 min-h-[500px] relative">
+        <div className="relative h-[60vh]">
           <div 
             ref={mapContainer} 
             className="w-full h-full rounded-lg"
-            style={{ minHeight: '500px', zIndex: 1 }}
+            style={{ zIndex: 1 }}
           />
+
+          {showFallback && (
+            <iframe
+              title="Map fallback"
+              className="absolute inset-0 w-full h-full rounded-lg border-0"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${centerLatLng[1]-0.01}%2C${centerLatLng[0]-0.01}%2C${centerLatLng[1]+0.01}%2C${centerLatLng[0]+0.01}&layer=mapnik&marker=${centerLatLng[0]}%2C${centerLatLng[1]}`}
+              referrerPolicy="no-referrer"
+            />
+          )}
         </div>
       </DialogContent>
     </Dialog>
