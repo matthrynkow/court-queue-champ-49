@@ -21,6 +21,7 @@ type AuthFormData = z.infer<typeof authSchema>;
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -46,7 +47,19 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+          redirectTo: `${window.location.origin}/auth?reset=true`,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Check your email",
+          description: "We've sent you a password reset link.",
+        });
+        setIsForgotPassword(false);
+      } else if (isSignUp) {
         const { error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
@@ -82,18 +95,16 @@ const Auth = () => {
         });
 
         if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            toast({
-              title: "Invalid credentials",
-              description: "Please check your email and password and try again.",
-              variant: "destructive",
-            });
-          } else {
-            throw error;
-          }
+          console.error('Sign in error:', error);
+          toast({
+            title: "Sign in failed",
+            description: error.message || "Please check your email and password and try again.",
+            variant: "destructive",
+          });
         }
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         title: "Error",
         description: error.message || "An unexpected error occurred",
@@ -109,19 +120,21 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">
-            {isSignUp ? 'Create Account' : 'Sign In'}
+            {isForgotPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Sign In'}
           </CardTitle>
           <CardDescription className="text-center">
-            {isSignUp 
-              ? 'Enter your details to create your account' 
-              : 'Enter your credentials to access your account'
+            {isForgotPassword
+              ? 'Enter your email to receive a password reset link'
+              : isSignUp 
+                ? 'Enter your details to create your account' 
+                : 'Enter your credentials to access your account'
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {isSignUp && (
+              {isSignUp && !isForgotPassword && (
                 <FormField
                   control={form.control}
                   name="displayName"
@@ -155,45 +168,73 @@ const Auth = () => {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="••••••••" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!isForgotPassword && (
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               
               <Button 
                 type="submit" 
                 className="w-full" 
                 disabled={loading}
               >
-                {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                {loading ? 'Loading...' : isForgotPassword ? 'Send Reset Link' : isSignUp ? 'Create Account' : 'Sign In'}
               </Button>
             </form>
           </Form>
           
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm"
-            >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : "Don't have an account? Sign up"
-              }
-            </Button>
+          <div className="mt-4 text-center space-y-2">
+            {!isSignUp && !isForgotPassword && (
+              <Button
+                variant="link"
+                onClick={() => setIsForgotPassword(true)}
+                className="text-sm"
+              >
+                Forgot password?
+              </Button>
+            )}
+            
+            {isForgotPassword ? (
+              <Button
+                variant="link"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setIsSignUp(false);
+                }}
+                className="text-sm"
+              >
+                Back to sign in
+              </Button>
+            ) : (
+              <Button
+                variant="link"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setIsForgotPassword(false);
+                }}
+                className="text-sm"
+              >
+                {isSignUp 
+                  ? 'Already have an account? Sign in' 
+                  : "Don't have an account? Sign up"
+                }
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
